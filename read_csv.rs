@@ -14,8 +14,9 @@ fn main() {
         let buf = line.unwrap();
         let tokens : Vec<&str> = buf.split(',').collect();
         if !read_header {
-            width = tokens[0].parse::<i32>().unwrap();
-            height = tokens[1].parse::<i32>().unwrap();
+            let hdr : Vec<i32> = tokens.into_iter().map(|t|{t.parse::<i32>().unwrap()}).collect();
+            width = hdr[0];
+            height = hdr[1];
             println!("{}x{}", width, height);
             data_buf.resize((width*height) as usize, 0);
             read_header = true;
