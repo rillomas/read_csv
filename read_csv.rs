@@ -2,8 +2,8 @@ use std::io::BufReader;
 use std::io::BufRead;
 use std::fs::File;
 
-fn main() {
-    let f = File::open("test.csv").unwrap();
+fn open_and_read(path: &str) -> Result<Vec<u16>,std::io::Error> {
+    let f = File::open(path)?;
     let file = BufReader::new(&f);
     let mut read_header = false;
     let mut width : i32;
@@ -11,7 +11,7 @@ fn main() {
     let mut data_buf = Vec::<u16>::new();
     let mut count = 0;
     for line in file.lines() {
-        let buf = line.unwrap();
+        let buf = line?;
         let tokens : Vec<&str> = buf.split(',').collect();
         if !read_header {
             let hdr : Vec<i32> = tokens.into_iter().map(|t|{t.parse::<i32>().unwrap()}).collect();
@@ -21,14 +21,20 @@ fn main() {
             data_buf.resize((width*height) as usize, 0);
             read_header = true;
         } else {
-            println!("{:?}", tokens);
-            for t in tokens {
-                data_buf[count] = t.parse::<u16>().unwrap();
+            let values : Vec<u16> = tokens.into_iter().map(|t|{t.parse::<u16>().unwrap()}).collect();
+            println!("{:?}", values);
+            for v in values {
+                data_buf[count] = v;
                 count += 1;
             }
         }
     }
-    println!("{:?}", data_buf);
+    return Ok(data_buf);
+}
+
+fn main() {
+    let data_buf = open_and_read("test.csv");
+    println!("{:?}", data_buf.unwrap());
     // let mut buf = String::new();
     // let size : usize;
     // {
