@@ -9,6 +9,14 @@ struct RawData {
     data: Vec<u16>,
 }
 
+fn tokenize<T: std::str::FromStr>(line: std::string::String) -> Vec<T>
+    where <T as std::str::FromStr>::Err: std::fmt::Debug {
+    let delim = ',';
+    let tokens : Vec<&str> = line.split(delim).collect();
+    let t : Vec<T> = tokens.into_iter().map(|t|{t.parse::<T>().unwrap()}).collect();
+    return t;
+}
+
 fn open_and_read(path: &str) -> Result<RawData,std::io::Error> {
     let f = File::open(path)?;
     let file = BufReader::new(&f);
@@ -18,8 +26,7 @@ fn open_and_read(path: &str) -> Result<RawData,std::io::Error> {
     let mut itr = file.lines();
     // read the header first
     let header = itr.next().unwrap()?;
-    let tokens : Vec<&str> = header.split(',').collect();
-    let hdr : Vec<i32> = tokens.into_iter().map(|t|{t.parse::<i32>().unwrap()}).collect();
+    let hdr = tokenize::<i32>(header);
     rd.width = hdr[0];
     rd.height = hdr[1];
     println!("{}x{}", rd.width, rd.height);
@@ -27,8 +34,7 @@ fn open_and_read(path: &str) -> Result<RawData,std::io::Error> {
     // read the data
     for line in itr {
         let linestr = line.unwrap();
-        let tokens : Vec<&str> = linestr.split(',').collect();
-        let values : Vec<u16> = tokens.into_iter().map(|t|{t.parse::<u16>().unwrap()}).collect();
+        let values = tokenize::<u16>(linestr);
         println!("{:?}", values);
         for v in values {
             data_buf[count] = v;
